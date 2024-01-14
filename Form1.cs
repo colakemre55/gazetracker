@@ -18,9 +18,10 @@ using Emgu.CV.Features2D;
 using SharpDX.MediaFoundation.DirectX;
 using System.Diagnostics;
 using Microsoft.ML;
-using WindowsFormsApp_EMGUCVBase.Models;
 using Emgu.CV.Reg;
 using Emgu.CV.Structure;
+using Python.Runtime;
+using WindowsFormsApp_EMGUCVBase.lib;
 //using SharpDX.MediaFoundation.EVR;
 //using SharpDX.Windows;
 
@@ -30,21 +31,28 @@ namespace WindowsFormsApp_EMGUCVBase
 {
     public partial class Form1 : Form
     {
-         VideoCapture cameraCapture; // readonly?
-         VideoCapture videoFileCapture;
+        VideoCapture cameraCapture; // readonly?
+        VideoCapture videoFileCapture;
         
-        
+        ObjectDetect myobject;
 
         private string selectedFilePath;
+        private string pythonText;
 
         //string fileToSaveFrames = @"C:\Users\colak\Downloads\popcorn.mp4";
 
         int mX, mY;
 
+        
+        
+
         public Form1()
         {
             InitializeComponent();
             this.FormClosing += Form1_FormClosing;
+
+            //RunScript("deneme");
+            //MessageBox.Show(myobject.RunScript("deneme"));
         }
 
 
@@ -234,27 +242,6 @@ namespace WindowsFormsApp_EMGUCVBase
 
 
 
-        private void PlayMedia_Click(object sender, EventArgs e)
-        {
-            if (!string.IsNullOrEmpty(selectedFilePath))
-            {
-                //axWindowsMediaPlayer1.URL = selectedFilePath;
-                //axWindowsMediaPlayer1.Ctlcontrols.play();
-
-                System.Threading.Thread cameraThread = new System.Threading.Thread(() => CaptureFramesFromCamera());
-                cameraThread.Start();
-                System.Threading.Thread dispalyVideoThread = new System.Threading.Thread(() => CaptureFramesFromVideoFile(selectedFilePath));
-                dispalyVideoThread.Start();
-
-            }
-            else
-            {
-                MessageBox.Show("Please select a media file first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-
-
         private void UploadVideo_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog ofd = new OpenFileDialog() { Multiselect = false, ValidateNames = true, Filter = "MP4|*.mp4|WMV|*.wmv|WAV|*.wav|MP3|*.mp3|MKV|*.mkv" })
@@ -267,12 +254,7 @@ namespace WindowsFormsApp_EMGUCVBase
             }
         }
 
-        private void listVideos_SelectedIndexChanged(object sender, EventArgs e)
-        {
-         
-
-        }
-
+      
 
 
        /* private void vlcControl1_Click(object sender, EventArgs e)
@@ -310,6 +292,12 @@ namespace WindowsFormsApp_EMGUCVBase
             {
                 MessageBox.Show("Please select a media file first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void detect_Click(object sender, EventArgs e)
+        {
+            myobject = new ObjectDetect();
+            myobject.RunScript();
         }
 
         private void pictureBox2_MouseMove(object sender, MouseEventArgs e)

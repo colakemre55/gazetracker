@@ -1,0 +1,4 @@
+Frame:0 person
+Frame:0 chair
+Frame:1 person
+Frame:1 bottle
