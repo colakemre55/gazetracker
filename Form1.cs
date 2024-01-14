@@ -63,7 +63,7 @@ namespace WindowsFormsApp_EMGUCVBase
             using (var videoCapture = new VideoCapture(selectedFilePath))
             using (var cameraCapture = new VideoCapture(0))
             {
-                while (true)
+                while (true)  /// degis
                 {
                     using (var imgCameraFrame = new Mat())
                     using (var imgVideoFrame = new Mat())
@@ -75,13 +75,14 @@ namespace WindowsFormsApp_EMGUCVBase
                         Bitmap myBmpCamera = imgCameraFrame.ToImage<Bgr, byte>().ToBitmap();
                         Font myFont = new Font("Arial", 30f);
                         Graphics gx = Graphics.FromImage(myBmpVideo);
-                         gx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                        Graphics gx2 = Graphics.FromImage(myBmpCamera);
+                        gx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
                          //gx.DrawEllipse(myPen, rect);
                          
                          gx.DrawString(frameNumber.ToString(), myFont, Brushes.Cyan, new PointF(0, 0));
 
                          gx.Dispose();
-                        Graphics gx2 = Graphics.FromImage(myBmpCamera);
+                        
                         
                         //gx.DrawEllipse(myPen, rect);
                         
