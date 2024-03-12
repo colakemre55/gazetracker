@@ -1,7 +1,6 @@
 ﻿
 using Python.Runtime;
-
-
+using System;
 
 namespace WindowsFormsApp_EMGUCVBase.lib
 {
@@ -16,7 +15,7 @@ namespace WindowsFormsApp_EMGUCVBase.lib
 
         private string inputFramesFolderPath = @"C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\Frames\\";
         private string outputDetectedFramesFolderPath = @"C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\OutputFrames\\";
-        public void RunScript()
+        public PyObject RunScript()
         {
             Runtime.PythonDLL = pythonDLLpath; // Local path for python 3.10 DLL
             PythonEngine.Initialize();
@@ -30,8 +29,9 @@ namespace WindowsFormsApp_EMGUCVBase.lib
                 //var result = pythonScript.InvokeMethod("sayHello"); // To pass parameteter var message = new PyString("message 1231232")  -> InvokeMethod("test" , new PyObject[] {message} )
                 var inputFolder = new PyString(inputFramesFolderPath);
                 var outputFolder = new PyString(outputDetectedFramesFolderPath);
-                pythonScript.InvokeMethod(functionNameToCall, new PyObject[] {inputFolder, outputFolder });
-
+                var result = pythonScript.InvokeMethod(functionNameToCall, new PyObject[] {inputFolder, outputFolder });
+                Console.WriteLine(result);
+                return result;
             }
 
         }

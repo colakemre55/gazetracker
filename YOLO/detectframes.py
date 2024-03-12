@@ -23,8 +23,11 @@ def framesObjectDetection(folderPath , outputFolderPath):
         
         df = results.pandas().xyxy[0]
 
-        for i in df['name']:  # name->labels
-            all_results.append((frameNumber, i))
+        if not df.empty:
+            for i in df['name']:  # name->labels
+                all_results.append((frameNumber, i))
+        else:
+            all_results.append((frameNumber, '0')) # if no objects detected
 
         temp_save_dir = os.path.join(outputFolderPath, "temp_save")
         results.save(save_dir = temp_save_dir )
@@ -41,3 +44,6 @@ def framesObjectDetection(folderPath , outputFolderPath):
     with open(outputResultsTXTPath, 'w') as f:
         for frameNumber, obj in all_results:
             f.write(f"Frame:{frameNumber} {obj}\n")
+
+
+    return all_results;
