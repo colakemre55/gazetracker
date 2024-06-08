@@ -24,6 +24,8 @@ using Emgu.CV.Structure;
 using Python.Runtime;
 using WindowsFormsApp_EMGUCVBase.lib;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using SharpDX.Direct3D9;
 //using SharpDX.MediaFoundation.EVR;
 //using SharpDX.Windows;
 
@@ -31,17 +33,18 @@ using System.Text.RegularExpressions;
 
 namespace WindowsFormsApp_EMGUCVBase
 {
-    
+
     public partial class Form1 : Form
     {
         private Size normalSize;
         private System.Drawing.Point normalLocation;
         private DockStyle normalDock;
-        
-        VideoCapture cameraCapture; // readonly?
-        VideoCapture videoFileCapture;
-        
+
+
         ObjectDetect myobject;
+        Estimation estimationPython;
+
+        Summary summary;
 
         private string selectedFilePath;
         private string pythonText;
@@ -51,7 +54,11 @@ namespace WindowsFormsApp_EMGUCVBase
         string resultsPath = @"C:\Users\colak\source\repos\WindowsFormsApp_EMGUCVBase\OutputFrames\results.txt";
         // Path to object detected frames
         private string outputDetectedFramesFolderPath = @"C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\OutputFrames\\";
-        
+
+
+        private FormWindowState normalWindowState;
+        private FormBorderStyle normalFormBorderStyle;
+        private bool isFullScreen;
 
         public Form1()
         {
@@ -61,19 +68,28 @@ namespace WindowsFormsApp_EMGUCVBase
 
             //menuStrip1.BackColor = ColorTranslator.FromHtml("#0276A7"); // Navigation bar color
             //analytics1.BackColor = ColorTranslator.FromHtml("#C4D4F2"); // Analytics user control color
-            
+
             menuStrip1.Renderer = new GradientMenuRenderer("#6DA7F2", "#91BBF2");
-            
+
             //textBox1.BackColor = Form1.DefaultBackColor;
             //textBox2.BackColor = Form1.DefaultBackColor;
-            textBox1.Font = new Font("Calibri", 28, FontStyle.Bold);
-            textBox2.Font = new Font("Calibri", 12, FontStyle.Regular);
-            textBox3.Font = new Font("Calibri", 20, FontStyle.Regular);
-            
+            textBox1.Font = new System.Drawing.Font("Calibri", 28, FontStyle.Bold);
+            textBox2.Font = new System.Drawing.Font("Calibri", 12, FontStyle.Regular);
+            textBox3.Font = new System.Drawing.Font("Calibri", 20, FontStyle.Regular);
+
             //SetGradientBackground(panel2, System.Drawing.Color.White, ColorTranslator.FromHtml("#C4D4F2"));
             //textBox1.BackColor = panel1.BackColor; textBox2.BackColor = panel2.BackColor;
             // panel2.BackColor = ColorTranslator.FromHtml("#C4D4F2");
 
+
+            estimationPython = new Estimation(); // BUttonlarda var 
+            summary = new Summary();
+
+            normalSize = this.Size;
+            normalLocation = this.Location;
+            normalWindowState = this.WindowState;
+            normalFormBorderStyle = this.FormBorderStyle;
+            isFullScreen = false;
         }
 
 
@@ -83,78 +99,98 @@ namespace WindowsFormsApp_EMGUCVBase
 
         private void CaptureCameraAndVideoFrames()
         {
+            ClearFrameFolders("C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\VideoFrames\\");
+            ClearFrameFolders("C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\CameraFrames\\");
+            bool displayCondition = true;
             int frameNumber = 0;
 
-            using (var videoCapture = new VideoCapture(selectedFilePath))
-            using (var cameraCapture = new VideoCapture(0))
+            using (var videoFileCapture = new VideoCapture(selectedFilePath))
             {
-                while (true)  /// degis
+                videoFileCapture.Set(Emgu.CV.CvEnum.CapProp.FrameWidth, 1920);
+                videoFileCapture.Set(Emgu.CV.CvEnum.CapProp.FrameHeight, 1080);
+                Console.WriteLine(videoFileCapture.Get(Emgu.CV.CvEnum.CapProp.FrameHeight));
+                using (var cameraCapture = new VideoCapture(0))
                 {
-                    using (var imgCameraFrame = new Mat())
-                    using (var imgVideoFrame = new Mat())
+                    cameraCapture.Set(Emgu.CV.CvEnum.CapProp.FrameWidth, 1280);
+                    cameraCapture.Set(Emgu.CV.CvEnum.CapProp.FrameHeight, 720);
+
+                    double fps = videoFileCapture.Get(Emgu.CV.CvEnum.CapProp.Fps);
+                    int frameDelay = (int)(1000 / fps);
+
+                    double actualWidth = videoFileCapture.Get(Emgu.CV.CvEnum.CapProp.FrameWidth);
+                    Console.WriteLine("ACTUAL" + actualWidth);
+                    while (displayCondition)  /// degis
                     {
-                        cameraCapture.Read(imgCameraFrame);
-                        videoCapture.Read(imgVideoFrame);
+                        using (var imgCameraFrame = new Mat())
+                        using (var imgVideoFrame = new Mat())
+                        {
 
-                        Bitmap myBmpVideo = imgVideoFrame.ToImage<Bgr, byte>().ToBitmap();
-                        Bitmap myBmpCamera = imgCameraFrame.ToImage<Bgr, byte>().ToBitmap();
-                        Font myFont = new Font("Arial", 30f);
-                        Graphics gx = Graphics.FromImage(myBmpVideo);
-                        Graphics gx2 = Graphics.FromImage(myBmpCamera);
-                        gx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                         //gx.DrawEllipse(myPen, rect);
-                         
-                         gx.DrawString(frameNumber.ToString(), myFont, Brushes.Cyan, new PointF(0, 0));
+                            cameraCapture.Read(imgCameraFrame);
+                            videoFileCapture.Read(imgVideoFrame);
 
-                         gx.Dispose();
-                        
-                        
-                        //gx.DrawEllipse(myPen, rect);
-                        
-                        gx2.DrawString(frameNumber.ToString(), myFont, Brushes.Cyan, new PointF(0, 0));
+                            if (imgVideoFrame.GetData() == null) // When video ends, this avoids processing null frame
+                            {
+                                displayCondition = false;
+                                ResetToNormalView();
+                                break;
+                            }
 
-                        gx2.Dispose();
+                            Bitmap myBmpVideo = imgVideoFrame.ToImage<Bgr, byte>().ToBitmap();
+                            Bitmap myBmpCamera = imgCameraFrame.ToImage<Bgr, byte>().ToBitmap();
+                            System.Drawing.Font myFont = new System.Drawing.Font("Arial", 30f);
+                            Graphics gx = Graphics.FromImage(myBmpVideo);
+                            Graphics gx2 = Graphics.FromImage(myBmpCamera);
+                            gx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                            //gx.DrawEllipse(myPen, rect);
 
-                        // Update PictureBox controls on the UI thread
-                         pictureBox2.Invoke((Action)delegate
-                         {
-                             pictureBox2.Image = myBmpVideo;
-                         });
+                            gx.DrawString(frameNumber.ToString(), myFont, Brushes.Cyan, new PointF(0, 0));
 
-                         /*pictureBox3.Invoke((Action)delegate
-                         {
-                             //pictureBox3.Image = myBmpCamera;
-                         }); */
-                        //pictureBox2.Image = myBmpVideo;
-                        //pictureBox3.Image = myBmpCamera;
-                        var filenameCamera = Path.Combine("C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\CameraFrames\\", $"Camera_{frameNumber}.png");
-                        var filenameVideo = Path.Combine("C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\Frames\\", $"Video_{frameNumber}.png");
+                            gx.Dispose();
 
-                        CvInvoke.Imwrite(filenameCamera, imgCameraFrame);
-                        CvInvoke.Imwrite(filenameVideo, imgVideoFrame);
 
-                        System.Threading.Thread.Sleep(30);
+                            //gx.DrawEllipse(myPen, rect);
 
-                        frameNumber++;
+                            gx2.DrawString(frameNumber.ToString(), myFont, Brushes.Cyan, new PointF(0, 0));
 
-                        // Add an exit condition if needed
-                        // For example, break the loop if a certain number of frames have been processed
-                        // or if a stop button is pressed in your UI
+                            gx2.Dispose();
+
+                            // Update PictureBox controls on the UI thread
+                            pictureBox2.Invoke((Action)delegate
+                            {
+                                pictureBox2.Image = myBmpVideo;
+                            });
+
+                            /*pictureBox3.Invoke((Action)delegate
+                            {
+                                //pictureBox3.Image = myBmpCamera;
+                            }); */
+                            //pictureBox2.Image = myBmpVideo;
+                            //pictureBox3.Image = myBmpCamera;
+                            var filenameCamera = Path.Combine("C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\CameraFrames\\", $"Camera_{frameNumber}.png");
+                            var filenameVideo = Path.Combine("C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\VideoFrames\\", $"Video_{frameNumber}.png");
+
+                            CvInvoke.Imwrite(filenameCamera, imgCameraFrame);
+                            CvInvoke.Imwrite(filenameVideo, imgVideoFrame);
+
+                            System.Threading.Thread.Sleep(30);
+
+                            frameNumber++;
+
+                            // Add an exit condition if needed
+                            // For example, break the loop if a certain number of frames have been processed
+                            // or if a stop button is pressed in your UI
+                        }
                     }
                 }
             }
         }
 
-       
+
 
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (cameraCapture != null && cameraCapture.IsOpened)
-                cameraCapture.Dispose();
 
-            if (videoFileCapture != null && videoFileCapture.IsOpened)
-                videoFileCapture.Dispose();
 
         }
 
@@ -190,13 +226,58 @@ namespace WindowsFormsApp_EMGUCVBase
             {
                 MessageBox.Show("Please select a media file first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+            FormBorderStyle = FormBorderStyle.None;
+
+            WindowState = FormWindowState.Maximized;
+            pictureBox2.Dock = DockStyle.None;
+            Bounds = Screen.PrimaryScreen.Bounds;
+            TopMost = true;
+            pictureBox2.Size = ClientSize;
+
+            pictureBox2.Location = new System.Drawing.Point(0, 0);
+            pictureBox2.BringToFront();
         }
 
         private void detect_Click(object sender, EventArgs e)
         {
+            var estimationResults = estimationPython.EstimateUsingFrames(); // ESTIMATION USING FRAMES FIRST 
+            for (int i = 0; i < estimationResults.Length(); i++)
+            {
+                GazePoint gazePoint = new GazePoint();
+                Console.WriteLine(estimationResults[i].ToString());
+                gazePoint.frameNumber = i;
+                gazePoint.X = estimationResults[i][0].As<double>();
+                gazePoint.Y = estimationResults[i][1].As<double>();
+
+                summary.AddGazePoint(gazePoint);
+                Console.WriteLine(i.ToString());
+
+            }
+            //----------------------------------
+            ClearFrameFolders("C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\OutputFrames\\");
             myobject = new ObjectDetect();
             var detectionResult = myobject.RunScript();
-            string results = detectionResult.ToString();
+            //Console.WriteLine(detectionResult.ToString());
+
+            //Detection detection = new Detection();
+            List<Detection> detections = JsonConvert.DeserializeObject<List<Detection>>(detectionResult.ToString());
+            Console.WriteLine("START DETECTION");
+            foreach (var detection in detections)
+            {
+                Console.WriteLine(detection.className.ToString());
+                Console.WriteLine(detection.xMin.ToString());
+                Console.WriteLine(detection.yMin.ToString());
+                Console.WriteLine(detection.xMax.ToString());
+                Console.WriteLine(detection.yMax.ToString());
+                Console.WriteLine(detection.frameNumber.ToString());
+                Console.WriteLine("-----------------------------------");
+                summary.AddDetection(detection);
+            }
+            Console.WriteLine("BITTI DETECTION");
+
+            // ----s
+            /*string results = detectionResult.ToString();
             
             var detectedTuples = pyObjectToArray(results);
 
@@ -205,12 +286,12 @@ namespace WindowsFormsApp_EMGUCVBase
             // Firstly find first item of last element ( 30 , person ) then add frame '0' ( 30 + 1 )
             int numberOfDetectedImages = Int32.Parse(detectedTuples[lengthOfTuples - 1].Item1) + 1;
 
-            numberOfDetected = numberOfDetectedImages;
+            numberOfDetected = numberOfDetectedImages;*/
             MessageBox.Show("Detection complete");
-            
+
         }
 
-        private (string,string)[] pyObjectToArray(string pyObject) // g 
+        private (string, string)[] pyObjectToArray(string pyObject) // g 
         {
 
             string pattern = @"\(([^)]+)\)";
@@ -232,39 +313,15 @@ namespace WindowsFormsApp_EMGUCVBase
         }
 
 
-        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
-        {   
-            /*
-            if (listView1.SelectedIndices.Count > 0)
-            {
-                //int selectedIndex = listView1.SelectedIndices[0];
-                var firstSelectedItem = listView1.SelectedItems[0];
-                string frameNum = firstSelectedItem.Text; // 0 1 2 3 4 
-                //MessageBox.Show("Selected : " + frameNum);
-                showDetectedFrames(frameNum);
-            }*/
-            
-
-            
-        }
-
-        private void showDetectedFrames(string frameNumber)
-        {
-            /*string framePath = outputDetectedFramesFolderPath + "Video_" + frameNumber + ".jpg";
-            //MessageBox.Show(framePath);
-            Image image = Image.FromFile(framePath);
-            pictureBoxDetect.Image = image; */
-        }
-
         private void viewButton_Click(object sender, EventArgs e)
         {
             readResults();
         }
-        
+
         private void readResults()
         {
             string[] lines = File.ReadAllLines(resultsPath);
-            
+
             Dictionary<int, Tuple<int, List<string>>> frameObjectData = new Dictionary<int, Tuple<int, List<string>>>();
 
             foreach (string line in lines)
@@ -273,7 +330,7 @@ namespace WindowsFormsApp_EMGUCVBase
 
                 if (parts.Length == 2 && parts[0].StartsWith("Frame:") && int.TryParse(parts[0].Substring("Frame:".Length), out int frame))
                 {
-                   // MessageBox.Show("here");
+                    // MessageBox.Show("here");
                     if (frameObjectData.ContainsKey(frame))
                     {
                         // increment obj count
@@ -299,8 +356,8 @@ namespace WindowsFormsApp_EMGUCVBase
                 ListViewItem item = new ListViewItem(new[] { dictFrame.ToString(), count.ToString(), string.Join(", ", objectNames) });
                 //listView1.Items.Add(item);
             }
-            
-            
+
+
         }
 
         private void listView1_MouseClick(object sender, MouseEventArgs e)
@@ -335,7 +392,7 @@ namespace WindowsFormsApp_EMGUCVBase
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e) // Nav Bar Analytics Button
         {
-            if( numberOfDetected > 0)
+            if (numberOfDetected > 0)
             {
                 analytics1.numberOfDetectedFrames = numberOfDetected; // check later
                 analytics1.Show();
@@ -343,7 +400,7 @@ namespace WindowsFormsApp_EMGUCVBase
             }
             else
             {
-                MessageBox.Show("First apply detection to see Analysis page", "Error",MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("First apply detection to see Analysis page", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             //analytics1.Show(); // sonra sil üstteki tarafı kullan
             //analytics1.Dock = DockStyle.Fill;
@@ -355,6 +412,8 @@ namespace WindowsFormsApp_EMGUCVBase
         {
             analytics1.Hide();
             analytics1.Dock = DockStyle.Fill;
+            summaryPage1.Hide();
+            //summaryPage1.Dock = DockStyle.Fill;
         }
 
         private void UploadMedia_Click(object sender, EventArgs e)
@@ -391,11 +450,6 @@ namespace WindowsFormsApp_EMGUCVBase
 
         }
 
-        private void button2_Click(object sender, EventArgs e) // temporary button
-        {
-            analytics1.Show();
-            analytics1.Dock = DockStyle.Fill;
-        }
         private void SetGradientBackground(Panel panel, System.Drawing.Color startColor, System.Drawing.Color endColor) // g // for gradient background
         {
             panel.Paint += (sender, e) =>
@@ -408,18 +462,102 @@ namespace WindowsFormsApp_EMGUCVBase
             };
         }
 
-        private void button3_Click(object sender, EventArgs e)
-        {
-            FormBorderStyle = FormBorderStyle.None;
-            
-            WindowState = FormWindowState.Maximized;
-            pictureBox2.Dock = DockStyle.None;
-            Bounds = Screen.PrimaryScreen.Bounds;
-            TopMost = true;
-            pictureBox2.Size = ClientSize;
 
-            pictureBox2.Location = new System.Drawing.Point(0, 0);
-            pictureBox2.BringToFront();
+        private void ClearFrameFolders(string folderPath)
+        {
+
+            try
+            {
+                // Delete all files in the directory
+                foreach (string file in Directory.GetFiles(folderPath))
+                {
+                    File.Delete(file);
+                }
+
+                // Delete all subdirectories in the directory
+                foreach (string subDirectory in Directory.GetDirectories(folderPath))
+                {
+                    Directory.Delete(subDirectory, true);
+                }
+
+                Console.WriteLine("Folder contents cleared successfully.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"An error occurred: {e.Message}");
+            }
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            //estimationPython = new Estimation();
+
+            var estimationResults = estimationPython.EstimateUsingFrames();
+            //MessageBox.Show(estimationResults.ToString());
+            MessageBox.Show("Gaze points are estimated");
+
+            
+
+
+            for (int i = 0; i < estimationResults.Length(); i++)
+            {
+                GazePoint gazePoint = new GazePoint();
+                Console.WriteLine("ddd");
+                Console.WriteLine(estimationResults[i].ToString());
+                gazePoint.frameNumber = i;
+                gazePoint.X = estimationResults[i][0].As<double>();
+                gazePoint.Y = estimationResults[i][1].As<double>();
+
+                summary.AddGazePoint(gazePoint);
+                Console.WriteLine(i.ToString());
+
+            }
+
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            estimationPython.Calibration();
+            MessageBox.Show("Calibration complete");
+        }
+
+
+        private void analytics1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void progressBar1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void denemeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            summary.ProcessGazeDetections();
+            var objectCounts = summary.GetGazeDuration();
+
+            summaryPage1.SetObjectCounts(objectCounts);
+            summaryPage1.InitializeMethods();
+
+            summaryPage1.Show();
+            summaryPage1.Dock = DockStyle.Fill;
+        }
+        private void ResetToNormalView()
+        {
+            this.Invoke((Action)delegate
+            {
+                this.WindowState = normalWindowState;
+                this.FormBorderStyle = normalFormBorderStyle;
+                this.Size = normalSize;
+                this.Location = normalLocation;
+                pictureBox2.Dock = DockStyle.None;
+                pictureBox2.Image = null; // Clear the image
+                this.Controls.Remove(pictureBox2);
+                pictureBox2 = null;
+                isFullScreen = false;
+            });
         }
     }
 }

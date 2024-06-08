@@ -36,6 +36,7 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.denemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.textBox2 = new System.Windows.Forms.TextBox();
@@ -48,8 +49,8 @@
             this.ımageList1 = new System.Windows.Forms.ImageList(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.button9 = new System.Windows.Forms.Button();
+            this.summaryPage1 = new WindowsFormsApp_EMGUCVBase.SummaryPage();
             this.analytics1 = new WindowsFormsApp_EMGUCVBase.Analytics();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -59,7 +60,7 @@
             // 
             // exitButton
             // 
-            this.exitButton.Location = new System.Drawing.Point(757, 584);
+            this.exitButton.Location = new System.Drawing.Point(792, 601);
             this.exitButton.Name = "exitButton";
             this.exitButton.Size = new System.Drawing.Size(150, 50);
             this.exitButton.TabIndex = 2;
@@ -70,10 +71,10 @@
             // pictureBox2
             // 
             this.pictureBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox2.Location = new System.Drawing.Point(1265, 239);
+            this.pictureBox2.Location = new System.Drawing.Point(1829, 915);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(432, 339);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox2.Size = new System.Drawing.Size(29, 16);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox2.TabIndex = 9;
             this.pictureBox2.TabStop = false;
             this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
@@ -94,7 +95,7 @@
             // detect
             // 
             this.detect.BackColor = System.Drawing.SystemColors.Window;
-            this.detect.Location = new System.Drawing.Point(534, 584);
+            this.detect.Location = new System.Drawing.Point(613, 601);
             this.detect.Name = "detect";
             this.detect.Size = new System.Drawing.Size(150, 50);
             this.detect.TabIndex = 14;
@@ -110,7 +111,8 @@
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem3,
-            this.toolStripMenuItem2});
+            this.toolStripMenuItem2,
+            this.denemeToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(246, 1033);
@@ -140,6 +142,17 @@
             this.toolStripMenuItem2.Text = "Analytics";
             this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
+            // denemeToolStripMenuItem
+            // 
+            this.denemeToolStripMenuItem.AutoSize = false;
+            this.denemeToolStripMenuItem.BackColor = System.Drawing.Color.White;
+            this.denemeToolStripMenuItem.Image = global::WindowsFormsApp_EMGUCVBase.Properties.Resources.summary;
+            this.denemeToolStripMenuItem.Margin = new System.Windows.Forms.Padding(0, 10, 0, 0);
+            this.denemeToolStripMenuItem.Name = "denemeToolStripMenuItem";
+            this.denemeToolStripMenuItem.Size = new System.Drawing.Size(195, 45);
+            this.denemeToolStripMenuItem.Text = "Summary";
+            this.denemeToolStripMenuItem.Click += new System.EventHandler(this.denemeToolStripMenuItem_Click);
+            // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.AutoSize = false;
@@ -155,7 +168,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(246, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1656, 200);
+            this.panel1.Size = new System.Drawing.Size(1656, 27);
             this.panel1.TabIndex = 18;
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
             // 
@@ -236,6 +249,7 @@
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(418, 45);
             this.progressBar1.TabIndex = 23;
+            this.progressBar1.Click += new System.EventHandler(this.progressBar1_Click);
             // 
             // ımageList1
             // 
@@ -251,32 +265,29 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(415, 604);
+            this.button1.Location = new System.Drawing.Point(375, 622);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(8, 8);
             this.button1.TabIndex = 24;
             this.button1.Text = "button1";
             this.button1.UseVisualStyleBackColor = true;
             // 
-            // button2
+            // button9
             // 
-            this.button2.Location = new System.Drawing.Point(29, 650);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(161, 72);
-            this.button2.TabIndex = 25;
-            this.button2.Text = "analytics temp bttn";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.button9.Location = new System.Drawing.Point(436, 601);
+            this.button9.Name = "button9";
+            this.button9.Size = new System.Drawing.Size(150, 50);
+            this.button9.TabIndex = 32;
+            this.button9.Text = "calibration";
+            this.button9.UseVisualStyleBackColor = true;
+            this.button9.Click += new System.EventHandler(this.button9_Click);
             // 
-            // button3
+            // summaryPage1
             // 
-            this.button3.Location = new System.Drawing.Point(29, 529);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(164, 83);
-            this.button3.TabIndex = 26;
-            this.button3.Text = "fullscreenplay";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
+            this.summaryPage1.Location = new System.Drawing.Point(281, 976);
+            this.summaryPage1.Name = "summaryPage1";
+            this.summaryPage1.Size = new System.Drawing.Size(36, 36);
+            this.summaryPage1.TabIndex = 34;
             // 
             // analytics1
             // 
@@ -287,6 +298,7 @@
             this.analytics1.Size = new System.Drawing.Size(129, 85);
             this.analytics1.TabIndex = 21;
             this.analytics1.Visible = false;
+            this.analytics1.Load += new System.EventHandler(this.analytics1_Load);
             // 
             // Form1
             // 
@@ -294,8 +306,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
             this.ClientSize = new System.Drawing.Size(1902, 1033);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
+            this.Controls.Add(this.summaryPage1);
+            this.Controls.Add(this.button9);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.analytics1);
@@ -328,7 +340,6 @@
         private System.Windows.Forms.Button detect;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Button UploadMedia;
@@ -342,8 +353,10 @@
         private System.Windows.Forms.TextBox textBox3;
         private System.Windows.Forms.TextBox textBox4;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button button9;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem denemeToolStripMenuItem;
+        private SummaryPage summaryPage1;
     }
 }
 

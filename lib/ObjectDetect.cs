@@ -13,12 +13,21 @@ namespace WindowsFormsApp_EMGUCVBase.lib
         private string scriptPath = @"C:\Users\colak\source\repos\WindowsFormsApp_EMGUCVBase\YOLO";
         private string pythonDLLpath = @"C:\Users\colak\AppData\Local\Programs\Python\Python310\python310.dll";
 
-        private string inputFramesFolderPath = @"C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\Frames\\";
+        private string inputFramesFolderPath = @"C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\VideoFrames\\";
         private string outputDetectedFramesFolderPath = @"C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\OutputFrames\\";
+
+        public ObjectDetect()
+        {
+            if (!PythonEngine.IsInitialized)
+            {
+                Runtime.PythonDLL = pythonDLLpath; // Set Python DLL path
+                PythonEngine.Initialize(); // Initialize the Python engine
+            }
+        }
         public PyObject RunScript()
         {
-            Runtime.PythonDLL = pythonDLLpath; // Local path for python 3.10 DLL
-            PythonEngine.Initialize();
+            //Runtime.PythonDLL = pythonDLLpath; // Local path for python 3.10 DLL
+            //PythonEngine.Initialize();
 
             using (Py.GIL())
             {
@@ -30,7 +39,7 @@ namespace WindowsFormsApp_EMGUCVBase.lib
                 var inputFolder = new PyString(inputFramesFolderPath);
                 var outputFolder = new PyString(outputDetectedFramesFolderPath);
                 var result = pythonScript.InvokeMethod(functionNameToCall, new PyObject[] {inputFolder, outputFolder });
-                Console.WriteLine(result);
+                //Console.WriteLine(result + "\n asdasdsad");
                 return result;
             }
 

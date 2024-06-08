@@ -84,6 +84,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -109,10 +110,18 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="GradientMenuRenderer.cs" />
+    <Compile Include="lib\Estimation.cs" />
     <Compile Include="lib\ObjectDetect.cs" />
+    <Compile Include="lib\Summary.cs" />
     <Compile Include="MediaFile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SummaryPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SummaryPage.Designer.cs">
+      <DependentUpon>SummaryPage.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Analytics.resx">
       <DependentUpon>Analytics.cs</DependentUpon>
     </EmbeddedResource>
@@ -129,6 +138,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="SummaryPage.resx">
+      <DependentUpon>SummaryPage.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -189,9 +201,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CameraFrames\" />
-    <Folder Include="Frames\" />
+    <Folder Include="GazeEstimation\OutputFrames\" />
+    <Folder Include="GazeEstimation\RecordedFrames\" />
     <Folder Include="OutputFrames\" />
     <Folder Include="Resources\" />
+    <Folder Include="VideoFrames\" />
     <Folder Include="YOLO\output_frames\" />
   </ItemGroup>
   <ItemGroup>
@@ -220,8 +234,30 @@
     <Content Include="Assets\home.png" />
     <Content Include="Assets\next_page.png" />
     <Content Include="Assets\previous_page.png" />
+    <None Include="Assets\summary.png" />
     <Content Include="Assets\upload2.png" />
     <Content Include="Assets\uploadimage.png" />
+    <Content Include="GazeEstimation\calib_from_frames.py" />
+    <Content Include="GazeEstimation\calibration.py" />
+    <Content Include="GazeEstimation\estimatephotos.py" />
+    <Content Include="GazeEstimation\helpers.py" />
+    <Content Include="GazeEstimation\landmarks\chin.txt" />
+    <Content Include="GazeEstimation\cleantxt.py" />
+    <Content Include="GazeEstimation\landmarks\lefteyecorner.txt" />
+    <Content Include="GazeEstimation\landmarks\leftmouthcorner.txt" />
+    <Content Include="GazeEstimation\landmarks\left_coefficients.txt" />
+    <Content Include="GazeEstimation\landmarks\left_pupil.txt" />
+    <Content Include="GazeEstimation\landmarks\nose_tip.txt" />
+    <Content Include="GazeEstimation\landmarks\relativeLeft.txt" />
+    <Content Include="GazeEstimation\landmarks\relativeRight.txt" />
+    <Content Include="GazeEstimation\landmarks\righteyecorner.txt" />
+    <Content Include="GazeEstimation\landmarks\rightmouthcorner.txt" />
+    <Content Include="GazeEstimation\landmarks\right_coefficients.txt" />
+    <Content Include="GazeEstimation\landmarks\right_pupil.txt" />
+    <Content Include="GazeEstimation\landmarks\screen_coordinates.txt" />
+    <Content Include="GazeEstimation\main.py" />
+    <Content Include="GazeEstimation\matrix.py" />
+    <Content Include="GazeEstimation\record_frames.py" />
     <Content Include="lib\deneme.py" />
     <Content Include="YOLO\miniframes\Video_122.png" />
     <Content Include="YOLO\miniframes\Video_242.png" />
