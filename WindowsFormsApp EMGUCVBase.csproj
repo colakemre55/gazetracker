@@ -151,6 +151,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <None Include="YOLO\coco.names" />
+    <None Include="YOLO\yolov5s.pt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -229,12 +230,23 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\analytics.png" />
+    <Content Include="Assets\calibcolor.png" />
+    <Content Include="Assets\calibrate.png" />
+    <Content Include="Assets\chart2.png" />
+    <Content Include="Assets\chrat.png" />
+    <Content Include="Assets\clapperboard.png" />
+    <Content Include="Assets\cloud.png" />
+    <Content Include="Assets\eye.png" />
     <Content Include="Assets\gaze.ico" />
     <Content Include="Assets\gaze.png" />
+    <Content Include="Assets\gaze2.png" />
+    <None Include="Assets\gazeblue.png" />
+    <Content Include="Assets\guide-book.png" />
     <Content Include="Assets\home.png" />
     <Content Include="Assets\next_page.png" />
     <Content Include="Assets\previous_page.png" />
     <None Include="Assets\summary.png" />
+    <Content Include="Assets\target.png" />
     <Content Include="Assets\upload2.png" />
     <Content Include="Assets\uploadimage.png" />
     <Content Include="GazeEstimation\calib_from_frames.py" />

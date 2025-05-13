@@ -8,7 +8,6 @@ from PIL import Image
 def framesObjectDetection(folderPath, outputFolderPath):
     # Load the YOLOv5 model
     model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # Load a pre-trained model
-
     # List image files in the folder path
     imageFiles = [f for f in os.listdir(folderPath) if f.endswith(('.jpg', '.jpeg', '.png'))]
 

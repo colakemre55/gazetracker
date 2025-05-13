@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using WindowsFormsApp_EMGUCVBase.lib;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace WindowsFormsApp_EMGUCVBase
 {
@@ -21,6 +22,8 @@ namespace WindowsFormsApp_EMGUCVBase
         private Image defaultImage = Image.FromFile("C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\Assets\\gaze.png");
         private string detectedImagesFolderPath = "C:\\Users\\colak\\source\\repos\\WindowsFormsApp_EMGUCVBase\\OutputFrames\\";
         private Dictionary<string, int> objectCounts = new Dictionary<string, int>();
+        private List<GazePoint> gazePoints = new List<GazePoint>();
+
         public SummaryPage()
         {
             InitializeComponent();
@@ -28,7 +31,10 @@ namespace WindowsFormsApp_EMGUCVBase
             AddHeaderLabel();
             //ConfigureFlowLayoutPanel();
         }
-
+        public void SetGazePoints(List<GazePoint> gazePointsList) // Add a method to set gaze points
+        {
+            gazePoints = gazePointsList;
+        }
         public void SetObjectCounts(Dictionary<string, int> object2)
         {
             objectCounts = object2;
@@ -37,14 +43,26 @@ namespace WindowsFormsApp_EMGUCVBase
         public void InitializeMethods()
         {
             UpdateObjectCounts();
+            PopulateScatterPlot(gazePoints);
+            textBox1.Font = new System.Drawing.Font("Calibri", 14, FontStyle.Regular);
+            textBox2.Font = new System.Drawing.Font("Calibri", 14, FontStyle.Regular);
+            textBox3.Font = new System.Drawing.Font("Calibri", 14, FontStyle.Regular);
+            string backColor = "#FAFAFA";
+            panel2.BackColor = ColorTranslator.FromHtml(backColor);
+            panel3.BackColor = ColorTranslator.FromHtml(backColor);
+            panel4.BackColor = ColorTranslator.FromHtml(backColor);
+            textBox1.BackColor = ColorTranslator.FromHtml(backColor);
+            textBox2.BackColor = ColorTranslator.FromHtml(backColor);
+            textBox3.BackColor = ColorTranslator.FromHtml(backColor);
+            flowLayoutPanel2.BackColor = ColorTranslator.FromHtml(backColor);
         }
 
         private void AddHeaderLabel()
         {
             Label headerLabel = new Label
             {
-                Text = "You have looked at these objects",
-                Font = new Font("Arial", 16, FontStyle.Bold),
+                Text = "Summary",
+                Font = new Font("Calibri", 16, FontStyle.Bold),
                 AutoSize = true,
                 Margin = new Padding(10)
             };
@@ -53,54 +71,57 @@ namespace WindowsFormsApp_EMGUCVBase
 
         public void UpdateObjectCounts()
         {
-            // Clear previous items but keep the header
             flowLayoutPanel1.Controls.Clear();
-            
             chart1.Series.Clear();
 
-            // Calculate the total number of gaze points on objects
             int totalGazePointsOnObjects = objectCounts.Values.Sum();
-
-            // Create a new series for the bar chart
             Series series = new Series
             {
                 Name = "GazeDistribution",
                 IsVisibleInLegend = false,
-                ChartType = SeriesChartType.Pie // Change to Column for vertical bars
+                ChartType = SeriesChartType.Pie
             };
 
-            foreach (var entry in objectCounts)
-            {
-                string dirtyClassName = entry.Key;
-                string cleanClassName = ExtractClassName(dirtyClassName); // Clean class name
+            var sortedObjectCounts = objectCounts
+                .Select(entry => new
+                {
+                    ClassName = entry.Key,
+                    Count = entry.Value,
+                    Percentage = totalGazePointsOnObjects > 0 ? (double)entry.Value / totalGazePointsOnObjects * 100 : 0
+                })
+                .OrderByDescending(entry => entry.Percentage)
+                .ToList();
 
-                // Skip any entries with the class name "0"
+            double otherPercentage = 0;
+            int otherCount = 0;
+
+            foreach (var entry in sortedObjectCounts)
+            {
+                string dirtyClassName = entry.ClassName;
+                string cleanClassName = ExtractClassName(dirtyClassName);
+
+                // Show all images in picture boxes regardless of their percentage
                 if (cleanClassName == "0")
                 {
                     continue;
                 }
 
-                int count = entry.Value;
+                int count = entry.Count;
+                double percentage = entry.Percentage;
 
-                // Calculate percentage
-                double percentage = totalGazePointsOnObjects > 0 ? (double)count / totalGazePointsOnObjects * 100 : 0;
-
-                // Log each class count and percentage for debugging
                 Console.WriteLine($"Class: {cleanClassName}, Count: {count}, Percentage: {percentage:F2}%");
 
-                string imagePath = FindRepresentativeImage(dirtyClassName); // Use dirty class name for file matching
+                string imagePath = FindRepresentativeImage(dirtyClassName);
                 Image classImage = imagePath != null ? Image.FromFile(imagePath) : defaultImage;
 
-                // Create a PictureBox for the image
                 PictureBox pictureBox = new PictureBox
                 {
                     Image = classImage,
                     SizeMode = PictureBoxSizeMode.StretchImage,
-                    Size = new Size(100, 100), // Adjust size as needed
+                    Size = new Size(100, 100),
                     Margin = new Padding(10)
                 };
 
-                // Create a Label for the class name above the image
                 Label nameLabel = new Label
                 {
                     Text = cleanClassName,
@@ -110,7 +131,6 @@ namespace WindowsFormsApp_EMGUCVBase
                     Margin = new Padding(10)
                 };
 
-                // Create a Label for the count and percentage below the image
                 Label countLabel = new Label
                 {
                     Text = $"{count} times ({percentage:F2}%)",
@@ -119,65 +139,61 @@ namespace WindowsFormsApp_EMGUCVBase
                     Margin = new Padding(10)
                 };
 
-                // Create a panel to hold the labels and PictureBox
                 FlowLayoutPanel itemPanel = new FlowLayoutPanel
                 {
                     FlowDirection = FlowDirection.TopDown,
-                    Size = new Size(120, 200), // Adjust size as needed
+                    Size = new Size(120, 200),
                     Margin = new Padding(10)
                 };
                 itemPanel.Controls.Add(nameLabel);
                 itemPanel.Controls.Add(pictureBox);
                 itemPanel.Controls.Add(countLabel);
 
-                // Add the item panel to the main flowLayoutPanel
                 flowLayoutPanel1.Controls.Add(itemPanel);
 
-                // Add data points to the series for the chart
-                //series.Points.AddXY(cleanClassName, percentage);
-
-                DataPoint dataPoint = new DataPoint
+                // Group objects with less than or equal to 2% into "Others" for the pie chart
+                if (percentage <= 2)
                 {
-                    AxisLabel = cleanClassName,
-                    YValues = new double[] { percentage }
-                };
-                dataPoint.Label = $"{percentage:F2}%"; // Show percentage on the pie chart
-                dataPoint.LegendText = cleanClassName; // Show class name in the legend
-                series.Points.Add(dataPoint);
-
+                    otherPercentage += percentage;
+                    otherCount += count;
+                }
+                else
+                {
+                    series.Points.AddXY(cleanClassName, percentage);
+                }
             }
 
-            // Add the series to the chart
+            if (otherCount > 0)
+            {
+                series.Points.AddXY("Others", otherPercentage);
+            }
+
             chart1.Series.Add(series);
-            chart1.ChartAreas[0].Area3DStyle.Enable3D = true; // Enable 3D for a nicer look
+            chart1.ChartAreas[0].Area3DStyle.Enable3D = true;
             chart1.Legends[0].Enabled = true;
         }
 
-
         private string FindRepresentativeImage(string objectClass)
         {
-            string cleanClassName = ExtractClassName(objectClass); // Clean the class name first
+            string cleanClassName = ExtractClassName(objectClass);
 
-            // Scan the folder for image files
             var imageFiles = Directory.EnumerateFiles(detectedImagesFolderPath, "*.jpg", SearchOption.AllDirectories)
                               .Concat(Directory.EnumerateFiles(detectedImagesFolderPath, "*.png", SearchOption.AllDirectories));
 
             foreach (string imagePath in imageFiles)
             {
-                // Split the filename to extract parts
                 string filename = Path.GetFileNameWithoutExtension(imagePath);
                 var parts = filename.Split('_');
 
-                // Check if any part of the filename matches the cleaned object class
                 foreach (var part in parts)
                 {
                     if (part.Equals(cleanClassName, StringComparison.OrdinalIgnoreCase))
                     {
-                        return imagePath; // Return the first image found that matches the class
+                        return imagePath;
                     }
                 }
             }
-            return null; // Return null if no matching image is found
+            return null;
         }
 
         private string ExtractClassName(string dirtyClassName)
@@ -185,9 +201,9 @@ namespace WindowsFormsApp_EMGUCVBase
             int atIndex = dirtyClassName.IndexOf(" at ");
             if (atIndex != -1)
             {
-                return dirtyClassName.Substring(0, atIndex); // Extract up to " at "
+                return dirtyClassName.Substring(0, atIndex);
             }
-            return dirtyClassName; // Return as is if the expected format is not found
+            return dirtyClassName;
         }
 
         private void chart1_Click(object sender, EventArgs e)
@@ -204,5 +220,43 @@ namespace WindowsFormsApp_EMGUCVBase
         {
 
         }
+
+        private void flowLayoutPanel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+        public void PopulateScatterPlot(List<GazePoint> gazePoints)
+        {
+            // Clear previous series
+            chart3.Series.Clear();
+
+            // Create a new series for the scatter plot
+            Series scatterSeries = new Series
+            {
+                Name = "GazePoints",
+                ChartType = SeriesChartType.Point,
+                MarkerStyle = MarkerStyle.Circle,
+                MarkerSize = 5,
+                Color = Color.Red
+            };
+
+            // Add the gaze points to the series
+            foreach (var point in gazePoints)
+            {
+                scatterSeries.Points.AddXY(point.X, point.Y);
+            }
+
+            // Add the series to the chart
+            chart3.Series.Add(scatterSeries);
+
+            // Configure chart area
+            chart3.ChartAreas[0].AxisX.Title = "X";
+            chart3.ChartAreas[0].AxisY.Title = "Y";
+            chart3.ChartAreas[0].AxisX.Minimum = 0;
+            chart3.ChartAreas[0].AxisX.Maximum = 1920; // Assuming 1920x1080 resolution, adjust as needed
+            chart3.ChartAreas[0].AxisY.Minimum = 0;
+            chart3.ChartAreas[0].AxisY.Maximum = 1080; // Assuming 1920x1080 resolution, adjust as needed
+        }
+
     }
 }

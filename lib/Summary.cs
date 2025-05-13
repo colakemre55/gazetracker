@@ -19,13 +19,17 @@ namespace WindowsFormsApp_EMGUCVBase.lib
         {
             return detections.Count;
         }
+        public List<GazePoint> GetGazePoints()
+        {
+            return gazePoints;
+        }
         public void AddDetection(Detection detection)
         {
             // Video frame capture ederken 1920x1080 alınamıyor
             // O kısmı düzeltince burayı sil
-            detection.xMin *= 1920 / 1280;
+            //detection.xMin *= 1920 / 1280;
             detection.xMax *= 1920 / 1280;
-            detection.yMin *= 1080 / 720;
+            //detection.yMin *= 1080 / 720;
             detection.yMax *= 1080 / 720;
 
             detections.Add(detection);

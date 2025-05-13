@@ -68,19 +68,27 @@ namespace WindowsFormsApp_EMGUCVBase
 
             //menuStrip1.BackColor = ColorTranslator.FromHtml("#0276A7"); // Navigation bar color
             //analytics1.BackColor = ColorTranslator.FromHtml("#C4D4F2"); // Analytics user control color
-
-            menuStrip1.Renderer = new GradientMenuRenderer("#6DA7F2", "#91BBF2");
-
+            
+            //menuStrip1.Renderer = new GradientMenuRenderer("#6DA7F2", "#91BBF2");
+            menuStrip1.Renderer = new GradientMenuRenderer("#6DA7F2", "#faf0f3");
             //textBox1.BackColor = Form1.DefaultBackColor;
             //textBox2.BackColor = Form1.DefaultBackColor;
             textBox1.Font = new System.Drawing.Font("Calibri", 28, FontStyle.Bold);
             textBox2.Font = new System.Drawing.Font("Calibri", 12, FontStyle.Regular);
-            textBox3.Font = new System.Drawing.Font("Calibri", 20, FontStyle.Regular);
-
+            textBox3.Font = new System.Drawing.Font("Calibri", 12, FontStyle.Regular);
+            textBox7.Font = new System.Drawing.Font("Calibri", 12, FontStyle.Regular);
+            textBox6.Font = new System.Drawing.Font("Calibri", 12, FontStyle.Regular);
+            textBox10.Font = new System.Drawing.Font("Calibri", 12, FontStyle.Regular);
+            textBox8.Font = new System.Drawing.Font("Calibri", 9, FontStyle.Regular);
+            textBox9.Font = new System.Drawing.Font("Calibri", 9, FontStyle.Regular);
+            //panel2.BackColor = System.Drawing.ColorTranslator.FromHtml("#6DA7F2");
             //SetGradientBackground(panel2, System.Drawing.Color.White, ColorTranslator.FromHtml("#C4D4F2"));
             //textBox1.BackColor = panel1.BackColor; textBox2.BackColor = panel2.BackColor;
             // panel2.BackColor = ColorTranslator.FromHtml("#C4D4F2");
-
+            panel5.BackColor = ColorTranslator.FromHtml("#FCFCFB");
+            panel6.BackColor = ColorTranslator.FromHtml("#FCFCFB");
+            //panel2.BackColor = ColorTranslator.FromHtml("#D9D9D9");
+            //panel4.BackColor = ColorTranslator.FromHtml("#D9D9D9");
 
             estimationPython = new Estimation(); // BUttonlarda var 
             summary = new Summary();
@@ -410,9 +418,16 @@ namespace WindowsFormsApp_EMGUCVBase
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e) // Nav Bar Home Button
         {
+            OpenHomePage();
+        }
+
+        private void OpenHomePage()
+        {
             analytics1.Hide();
             analytics1.Dock = DockStyle.Fill;
             summaryPage1.Hide();
+            panel5.Show();
+            panel6.Show();
             //summaryPage1.Dock = DockStyle.Fill;
         }
 
@@ -534,16 +549,25 @@ namespace WindowsFormsApp_EMGUCVBase
 
         private void denemeToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            OpenSummaryPage();
+        }
 
+        private void OpenSummaryPage()
+        {
             summary.ProcessGazeDetections();
             var objectCounts = summary.GetGazeDuration();
 
+            var gazePointsForSummary = summary.GetGazePoints();
+            summaryPage1.SetGazePoints(gazePointsForSummary);
             summaryPage1.SetObjectCounts(objectCounts);
             summaryPage1.InitializeMethods();
 
             summaryPage1.Show();
             summaryPage1.Dock = DockStyle.Fill;
+            panel5.Hide();
+            panel6.Hide();
         }
+
         private void ResetToNormalView()
         {
             this.Invoke((Action)delegate
@@ -558,6 +582,31 @@ namespace WindowsFormsApp_EMGUCVBase
                 pictureBox2 = null;
                 isFullScreen = false;
             });
+        }
+
+        private void textBox5_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox5_TextChanged_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox7_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e) // COPY OF SUMMARY BUTTON ( AS IN NAVBAR )
+        {
+            OpenSummaryPage();
+        }
+
+        private void textBox9_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
