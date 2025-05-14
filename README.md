@@ -56,14 +56,7 @@ This system is designed to estimate a user's gaze on a video, identify the most 
 - 📊 UX and UI testing for video content
 - 🧑‍💻 Gaze-based accessibility tools
 
-## 👥 Authors
-
-- Mehmet Furkan Uyanık (150180802)
-- Murat Emre Çolak (150180061)
-
-**Advisor:** Assoc. Prof. Dr. Cihan Topal  
-**Department:** Computer Engineering, ITU
-
+#
 ## 📃 License
 
 This project is for academic purposes and released under the MIT License.
