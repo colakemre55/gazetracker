@@ -40,26 +40,12 @@ This system is designed to estimate a user's gaze on a video, identify the most 
 5. **Generate heatmaps** showing where the user looked.
 6. **Display final results** including object attention analysis.
 
-## 📂 Project Structure (Simplified)
-/GazeEstimationSystem
-├── /GUI # C# Desktop GUI with threading support
-├── /PythonScripts # YOLO and gaze estimation models
-├── /Models # Trained CNN models
-├── /VideoFrames # Processed video and camera frames
-├── /Results # Heatmaps and analytics
-
-
 ## 🧪 Use Cases
 
 - 🎯 Neuromarketing analysis
 - 🧪 Human-Computer Interaction research
 - 📊 UX and UI testing for video content
 - 🧑‍💻 Gaze-based accessibility tools
-
-#
-## 📃 License
-
-This project is for academic purposes and released under the MIT License.
 
 ## 📈 Future Improvements
 
